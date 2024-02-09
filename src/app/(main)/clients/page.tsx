@@ -20,19 +20,16 @@ export default function Client() {
   const [showModalProfile, setShowModalProfile] = useState<boolean>(false)
   const [showModalAddress, setShowModalAddress] = useState<boolean>(false)
 
-  const [filters, setFilters] = useState({ limit: 10, page: 1 })
+  const [filters, setFilters] = useState({ limit: 20, sort: '-created_at', page: 1, expand: 'profile,address' })
 
   const handleSelect = useCallback((i: number) => {
-    setClient(clients?.data[i] || null)
+    setClient(Array.from(clients || [])[i] || null)
     setMode("update")
   }, [clients])
 
   const handleRefresh = useCallback(() => {
     setClient(null)
-    getAllClients({
-      "per-page": filters.limit,
-      page: filters.page
-    })
+    handleUpdateTable()
   }, [filters])
 
   const handleDelete = useCallback((id: number) => {
@@ -47,24 +44,13 @@ export default function Client() {
     }).then((result) => {
       if (result.isConfirmed) {
 
-        deleteClient(id).unwrap().then((result) => {
-          if (!result.deleted) {
-            return Swal.fire({
-              title: "Error delete client",
-              text: "Could not delete client",
-              icon: "error"
-            });
-          }
-
+        deleteClient(id).unwrap().then(() => {
           return Swal.fire({
             title: "Deleted!",
             text: "Your client has been deleted.",
             icon: "success",
             willClose: () => {
-              getAllClients({
-                "per-page": filters.limit,
-                page: filters.page
-              })
+              handleRefresh()
             }
           });
         }).catch(() => {
@@ -92,7 +78,6 @@ export default function Client() {
 
   const handleCloseNewClient = useCallback(() => {
     setShowModalClient(false)
-    setClient(null)
   }, [])
 
   const handleUpdateProfile = useCallback((i: number) => {
@@ -102,7 +87,7 @@ export default function Client() {
 
   const handleCloseProfile = useCallback(() => {
     setShowModalProfile(false)
-    setClient(null)
+    handleRefresh()
   }, [])
 
   const handleUpdateAddress = useCallback((i: number) => {
@@ -112,14 +97,19 @@ export default function Client() {
 
   const handleCloseAddress = useCallback(() => {
     setShowModalAddress(false)
-    setClient(null)
+    handleRefresh()
   }, [])
 
-  useEffect(() => {
+  const handleUpdateTable = useCallback(() => {
     getAllClients({
-      "per-page": filters.limit,
-      page: filters.page
+      sort: filters.sort,
+      page: filters.page,
+      expand: filters.expand
     })
+  }, [filters])
+
+  useEffect(() => {
+    handleRefresh()
   }, [filters])
 
   return (
@@ -143,7 +133,7 @@ export default function Client() {
               </tr>
             </thead>
             <tbody>
-              {Array.from(clients?.data || []).map((item, i) => (
+              {Array.from(clients || []).map((item, i) => (
                 <tr key={i}>
                   <th scope="row">{item.id}</th>
                   <td>{item.email}</td>
@@ -170,7 +160,7 @@ export default function Client() {
           <ul className="pagination justify-content-end">
             <PaginationComponent
               itemsPage={filters.limit}
-              totalItems={clients?.pagination.totalCount || 0}
+              totalItems={0}
               onPageChange={(page) => {
                 setFilters((prev) => ({
                   ...prev,
@@ -192,13 +182,13 @@ export default function Client() {
 
       <CreateProfile
         show={showModalProfile}
-        clientId={client?.id as number}
+        client={client}
         onClose={handleCloseProfile}
       />
 
       <CreateAddress
         show={showModalAddress}
-        clientId={client?.id as number}
+        client={client}
         onClose={handleCloseAddress}
       />
     </React.Fragment>

@@ -6,77 +6,68 @@ import Swal from 'sweetalert2'
 import ModalForm from "../ModalForm"
 import { ModeType } from "../ModalForm/ModalForm.interface"
 import { ICreateProfileProsp } from "./CreateProfile.interface"
+import { ObjectKeyDynamicI } from "@interfaces/common/common.interface"
 
-const CreateProfile = ({ clientId, onClose, show }: ICreateProfileProsp) => {
+const CreateProfile = ({ client, onClose, show }: ICreateProfileProsp) => {
     const [mode, setMode] = useState<ModeType>("create")
 
     const [createProfile, { isLoading: isCreating }] = useCreateProfileMutation()
     const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation()
 
-    const [getClient, { currentData: client }] = useLazyGetOneQuery()
-
     const handleUpdate = useCallback((data: IProfile, clear: () => void) => {
-        updateProfile(data).unwrap().then((result) => {
-            const isError = !Array.isArray(result.errors) && result.errors ? true : false
-
+        updateProfile(data).unwrap().then(() => {
             Swal.fire({
-                title: `${isError ? "Error" : "Updated"} Profle`,
-                text: isError ? `${Array.from(result.errors?.message || [])[0]}` || "Could not update profile" : "Profle updated successfully",
-                icon: isError ? "error" : "success"
+                title: "Updated Profle",
+                text: "Profle updated successfully",
+                icon: "success"
             });
 
             clear()
-        }).catch(() => {
+        }).catch((e) => {
+            const data = e.data as ObjectKeyDynamicI[];
             Swal.fire({
                 title: "Error Profile",
-                text: "Could not update profile",
+                text: Array.from(data || [])[0]?.message || "Could not update profile",
                 icon: "error"
             });
         })
-    }, [client])
+    }, [])
 
     const handleCreate = useCallback((data: IProfile, clear: () => void) => {
-        createProfile(data).unwrap().then((result) => {
-            const isError = !Array.isArray(result.errors) && result.errors ? true : false
-
+        createProfile(data).unwrap().then(() => {
             Swal.fire({
-                title: `${isError ? "Error" : "Created"} Profile`,
-                text: isError ? `${Array.from(result.errors?.message || [])[0]}` || "Could not create profile" : "Profile created successfully",
-                icon: isError ? "error" : "success"
+                title: "Updated Profile",
+                text: "Profile update successfully",
+                icon: "success"
             });
 
             clear()
-        }).catch(() => {
+        }).catch((e) => {
+            const data = e.data as ObjectKeyDynamicI[];
             Swal.fire({
                 title: "Error Profile",
-                text: "Could not create profile",
+                text: Array.from(data || [])[0]?.message || "Could not update profile",
                 icon: "error"
             });
         })
-    }, [clientId, client])
+    }, [])
 
     useEffect(() => {
-        if(clientId){
-            getClient({ id: clientId })
-        }
-    }, [clientId])
-
-    useEffect(() => {
-        setMode(client?.data?.profile ? "update" : "create")
-    }, [client])
+        setMode(client?.profile ? "update" : "create")
+    }, [JSON.stringify(client)])
 
     return (
         <ModalForm<IProfile>
             show={show}
             mode={mode}
             subTitle="profile"
-            reference={`profile-${clientId}`}
+            reference={`profile-${client?.id}`}
             onlyShowLabelUpdate
             loading={isCreating || isUpdating}
-            entity={client?.data?.profile ? {
-                ...client.data.profile,
-                client_id: clientId
-            } : { client_id: clientId } as IProfile}
+            entity={client?.profile ? {
+                ...client.profile,
+                client_id: client.id
+            } : { client_id: client?.id } as IProfile}
             handleSave={(data, clear) => handleCreate(data, clear)}
             handleUpdate={(data, clear) => handleUpdate(data, clear)}
             handleClose={onClose}

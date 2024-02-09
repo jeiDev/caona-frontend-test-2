@@ -33,12 +33,6 @@ export interface IUpdateAddressResponse extends ICreateAddressResponse {
 	updated: boolean
 }
 
-export interface IGetManyAddressResponse {
-	data: IAddress[]
-	pagination: IGeneralPaginationResponse
-	errors: ObjectKeyDynamicI
-}
-
 export interface IGetOneAddressResponse {
 	data: IAddress
 	errors: ObjectKeyDynamicI

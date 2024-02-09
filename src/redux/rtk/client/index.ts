@@ -2,9 +2,9 @@ import config from '@config'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import paramsSerializerUtils from '@utils/paramsSerializer.utils'
 import {
+	IClient,
 	ICreateClientRequest,
 	ICreateClientResponse,
-	IGetManyClientResponse,
 	IGetOneClientResponse,
 	IUpdateClientRequest,
 	IUpdateClientResponse
@@ -21,7 +21,7 @@ export const clientRTKProvider = createApi({
 	endpoints: (builder) => ({
 		createClient: builder.mutation<ICreateClientResponse, ICreateClientRequest>({
 			query: (data) => ({
-				url: '/clients',
+				url: '/client',
 				method: 'POST',
 				body: data
 			}),
@@ -31,7 +31,7 @@ export const clientRTKProvider = createApi({
 		}),
 		updateClient: builder.mutation<IUpdateClientResponse, IUpdateClientRequest>({
 			query: (data) => ({
-				url: '/clients',
+				url: `/client/${data.id}`,
 				method: 'PUT',
 				body: data
 			}),
@@ -41,26 +41,24 @@ export const clientRTKProvider = createApi({
 		}),
 		deleteClient: builder.mutation<{ deleted: boolean }, number>({
 			query: (id) => ({
-				url: '/clients',
+				url: `/client/${id}`,
 				method: 'DELETE',
-				body: { id }
 			}),
 			transformResponse: (res: { deleted: boolean }) => {
 				return res
 			}
 		}),
-		getManyClient: builder.query<IGetManyClientResponse, { page: number, ['per-page']: number }>({
+		getManyClient: builder.query<IClient[], { page: number, sort: string, expand: string }>({
 			query: (data) => ({
-				url: '/clients',
+				url: '/client',
 				method: 'GET',
 				params: data
 			})
 		}),
 		getOne: builder.query<IGetOneClientResponse, { id: number }>({
 			query: (data) => ({
-				url: '/clients',
-				method: 'GET',
-				params: data
+				url: `/client/${data.id}`,
+				method: 'GET'
 			})
 		})
 	})

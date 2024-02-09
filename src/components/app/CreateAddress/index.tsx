@@ -1,35 +1,33 @@
 import { useCreateAddressMutation, useUpdateAddressMutation } from "@redux/rtk/address"
 import { IAddress } from "@redux/rtk/address/address.interfaces"
-import { useLazyGetOneQuery } from "@redux/rtk/client"
 import { useCallback, useEffect, useState } from "react"
 import Swal from 'sweetalert2'
 import ModalForm from "../ModalForm"
 import { ModeType } from "../ModalForm/ModalForm.interface"
 import { ICreateAddressProsp } from "./CreateAddress.interface"
+import { ObjectKeyDynamicI } from "@interfaces/common/common.interface"
 
-const CreateAddress = ({ clientId, onClose, show }: ICreateAddressProsp) => {
+const CreateAddress = ({ client, onClose, show }: ICreateAddressProsp) => {
     const [mode, setMode] = useState<ModeType>("create")
 
     const [createAddress, { isLoading: isCreating }] = useCreateAddressMutation()
     const [updateAddress, { isLoading: isUpdating }] = useUpdateAddressMutation()
 
-    const [getClient, { currentData: client }] = useLazyGetOneQuery()
 
     const handleUpdate = useCallback((data: IAddress, clear: () => void) => {
         updateAddress(data).unwrap().then((result) => {
-            const isError = !Array.isArray(result.errors) && result.errors ? true : false
-
             Swal.fire({
-                title: `${isError ? "Error" : "Updated"} Address`,
-                text: isError ? `${Array.from(result.errors?.message || [])[0]}` || "Could not update address" : "Address updated successfully",
-                icon: isError ? "error" : "success"
+                title: "Updated Address",
+                text:  "Address updated successfully",
+                icon: "success"
             });
 
             clear()
-        }).catch(() => {
+        }).catch((e) => {
+            const data = e.data as ObjectKeyDynamicI[];
             Swal.fire({
                 title: "Error Address",
-                text: "Could not update address",
+                text: Array.from(data || [])[0]?.message || "Could not update address",
                 icon: "error"
             });
         })
@@ -46,23 +44,20 @@ const CreateAddress = ({ clientId, onClose, show }: ICreateAddressProsp) => {
             });
 
             clear()
-        }).catch(() => {
+        }).catch((e) => {
+            const data = e.data as ObjectKeyDynamicI[];
             Swal.fire({
                 title: "Error Address",
-                text: "Could not create address",
+                text: Array.from(data || [])[0]?.message || "Could not update address",
                 icon: "error"
             });
         })
-    }, [clientId, client])
+    }, [])
+
+
 
     useEffect(() => {
-        if(clientId){
-            getClient({ id: clientId })
-        }
-    }, [clientId])
-
-    useEffect(() => {
-        setMode(client?.data?.address ? "update" : "create")
+        setMode(client?.address ? "update" : "create")
     }, [client])
 
     return (
@@ -70,13 +65,13 @@ const CreateAddress = ({ clientId, onClose, show }: ICreateAddressProsp) => {
             show={show}
             mode={mode}
             subTitle="address"
-            reference={`address-${clientId}`}
+            reference={`address-${client?.id}`}
             onlyShowLabelUpdate
             loading={isCreating || isUpdating}
-            entity={client?.data?.address ? {
-                ...client.data.address,
-                client_id: clientId
-            } : { client_id: clientId } as IAddress}
+            entity={client?.address ? {
+                ...client.address,
+                client_id: client.id
+            } : { client_id: client?.id } as IAddress}
             handleSave={(data, clear) => handleCreate(data, clear)}
             handleUpdate={(data, clear) => handleUpdate(data, clear)}
             handleClose={onClose}

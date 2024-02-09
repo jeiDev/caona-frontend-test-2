@@ -30,12 +30,6 @@ export interface IUpdateClientResponse extends ICreateClientResponse {
 	updated: boolean
 }
 
-export interface IGetManyClientResponse {
-	data: IClient[]
-	pagination: IGeneralPaginationResponse
-	errors: ObjectKeyDynamicI
-}
-
 export interface IGetOneClientResponse {
 	data: IClient
 	errors: ObjectKeyDynamicI

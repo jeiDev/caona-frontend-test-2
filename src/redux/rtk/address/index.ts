@@ -2,9 +2,9 @@ import config from '@config'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import paramsSerializerUtils from '@utils/paramsSerializer.utils'
 import {
+	IAddress,
 	ICreateAddressRequest,
 	ICreateAddressResponse,
-	IGetManyAddressResponse,
 	IGetOneAddressResponse,
 	IUpdateAddressRequest,
 	IUpdateAddressResponse
@@ -17,11 +17,11 @@ export const addressRTKProvider = createApi({
 		paramsSerializer(params) {
 			return paramsSerializerUtils(params)
 		}
-	}),
+	}), 
 	endpoints: (builder) => ({
 		createAddress: builder.mutation<ICreateAddressResponse, ICreateAddressRequest>({
 			query: (data) => ({
-				url: '/addresses',
+				url: '/address',
 				method: 'POST',
 				body: data
 			}),
@@ -31,7 +31,7 @@ export const addressRTKProvider = createApi({
 		}),
 		updateAddress: builder.mutation<IUpdateAddressResponse, IUpdateAddressRequest>({
 			query: (data) => ({
-				url: '/addresses',
+				url: `/address/${data.id}`,
 				method: 'PUT',
 				body: data
 			}),
@@ -41,26 +41,24 @@ export const addressRTKProvider = createApi({
 		}),
 		deleteAddress: builder.mutation<{ deleted: boolean }, number>({
 			query: (id) => ({
-				url: '/addresses',
-				method: 'DELETE',
-				body: { id }
+				url: `/address/${id}`,
+				method: 'DELETE'
 			}),
 			transformResponse: (res: { deleted: boolean }) => {
 				return res
 			}
 		}),
-		getManyAddress: builder.query<IGetManyAddressResponse, { page: number, ['per-page']: number }>({
+		getManyAddress: builder.query<IAddress[], { page: number, sort: string, expand: string }>({
 			query: (data) => ({
-				url: '/addresses',
+				url: '/address',
 				method: 'GET',
 				params: data
 			})
 		}),
 		getOneAddress: builder.query<IGetOneAddressResponse, { id: number }>({
 			query: (data) => ({
-				url: '/addresses',
-				method: 'GET',
-				params: data
+				url: `/address/${data.id}`,
+				method: 'GET'
 			})
 		})
 	})

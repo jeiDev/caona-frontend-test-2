@@ -4,13 +4,13 @@ import paramsSerializerUtils from '@utils/paramsSerializer.utils'
 import {
 	ICreateProfileRequest,
 	ICreateProfileResponse,
-	IGetManyProfileResponse,
 	IGetOneProfileResponse,
+	IProfile,
 	IUpdateProfileRequest,
 	IUpdateProfileResponse
 } from './profile.interfaces'
 
-export const profileRTKProvider = createApi({
+export const profileRTKProvider = createApi({ 
 	reducerPath: 'profile',
 	baseQuery: fetchBaseQuery({
 		baseUrl: config.apiServer,
@@ -21,7 +21,7 @@ export const profileRTKProvider = createApi({
 	endpoints: (builder) => ({
 		createProfile: builder.mutation<ICreateProfileResponse, ICreateProfileRequest>({
 			query: (data) => ({
-				url: '/profiles',
+				url: '/profile',
 				method: 'POST',
 				body: data
 			}),
@@ -31,7 +31,7 @@ export const profileRTKProvider = createApi({
 		}),
 		updateProfile: builder.mutation<IUpdateProfileResponse, IUpdateProfileRequest>({
 			query: (data) => ({
-				url: '/profiles',
+				url: `/profile/${data.id}`,
 				method: 'PUT',
 				body: data
 			}),
@@ -41,26 +41,24 @@ export const profileRTKProvider = createApi({
 		}),
 		deleteProfile: builder.mutation<{ deleted: boolean }, number>({
 			query: (id) => ({
-				url: '/profiles',
-				method: 'DELETE',
-				body: { id }
+				url: `/profile/${id}`,
+				method: 'DELETE'
 			}),
 			transformResponse: (res: { deleted: boolean }) => {
 				return res
 			}
 		}),
-		getManyProfile: builder.query<IGetManyProfileResponse, { page: number, ['per-page']: number }>({
+		getManyProfile: builder.query<IProfile[], { page: number, sort: string }>({
 			query: (data) => ({
-				url: '/profiles',
+				url: '/profile',
 				method: 'GET',
 				params: data
 			})
 		}),
 		getOneProfile: builder.query<IGetOneProfileResponse, { id: number }>({
 			query: (data) => ({
-				url: '/profiles',
-				method: 'GET',
-				params: data
+				url: `/profile/${data.id}`,
+				method: 'GET'
 			})
 		})
 	})

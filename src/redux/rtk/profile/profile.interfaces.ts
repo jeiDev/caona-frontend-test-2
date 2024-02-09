@@ -31,12 +31,6 @@ export interface IUpdateProfileResponse extends ICreateProfileResponse {
 	updated: boolean
 }
 
-export interface IGetManyProfileResponse {
-	data: IProfile[]
-	pagination: IGeneralPaginationResponse
-	errors: ObjectKeyDynamicI
-}
-
 export interface IGetOneProfileResponse {
 	data: IProfile
 	errors: ObjectKeyDynamicI
